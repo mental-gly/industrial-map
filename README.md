@@ -34,7 +34,7 @@
 
    `cd imap/Scripts`
 
-   激活：`activates`  
+   激活：`activate`  
 
    关闭：`deactivate`
 
