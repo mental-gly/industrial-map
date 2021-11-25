@@ -44,7 +44,25 @@
 
    `pip3 install flask`
 
-
+## 文件架构
+```sh
+├── backend
+│   ├── static
+│   │   └── build
+│   ├── templates
+│   │   └── index.html
+│   └── app.py
+├── frontend
+│   ├── public
+│   ├── source
+│   └── ...
+├── Lib
+│   └── site-packages
+├── Scripts
+│   └── ...
+├── pyvenv.cfg
+└── .gitignore
+```
 
 ## 运行步骤
 
