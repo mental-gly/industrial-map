@@ -28,7 +28,7 @@ def register():
         sql = sql.format(name=data["user_name"],pw=data["user_pw"],email=data['user_mail'])
         cursor.execute(sql)
         db.commit()
-        print("成功")
+        #print("成功")
         msg = {'code': 0}
         return json.dumps(msg)
 
@@ -41,7 +41,7 @@ def login():
         cursor = db.cursor()
         sql = "select password,id from user_account where name='%s'"%data["user_name"]
         cursor.execute(sql)
-        account = cursor.fetchall()
+        account = cursor.fetchone()
         if account:
             if account[0] == data['user_pw']:
                 #print("登陆成功")
@@ -74,20 +74,8 @@ def click():
             cursor.execute(sql)
             materials = cursor.fetchall()
             msg = {
-                'enterprise_info':
-                    {
-                        'name': enterprises[1],
-                        'province': enterprises[2],
-                        'city': enterprises[3],
-                        'amount': enterprises[4],
-                        'type': enterprises[5]
-                    },
-                'Material':
-                    {
-                        'id': materials[0],
-                        'name': materials[1],
-                        'content': materials[2]
-                    }
+                'enterprise_info': enterprises,
+                'Material': materials
             }
             return json.dumps(msg)
         if data['chosen_material']:
@@ -106,7 +94,7 @@ def click():
             enterprises = cursor.fetchall()
             sql = "select * from material where name = '%s'" % data["chosen_material"]
             cursor.execute(sql)
-            materials = cursor.fetchall()
+            materials = cursor.fetchone()
             msg = {
                 'cities_name' : cities,
                 'enterprise_info' : enterprises,
