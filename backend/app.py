@@ -9,7 +9,7 @@ db = pymysql.connect(host='localhost',user='root',database='industrial_map',pass
 def index():
     return render_template('index.html')
 
-@app.route('/login/register', methods=['GET','POST'])
+@app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'GET' :
         return render_template('register.html')
