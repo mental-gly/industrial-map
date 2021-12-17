@@ -274,6 +274,7 @@ var districts = [
 ];
 
 var LabelsData = [];
+var ProData=[];
 
 const directions = {
     '北京':'top',
@@ -323,6 +324,7 @@ for (let i = 0; i < districts.length; i++) {
         config.text.direction = directions[name];
     }
     LabelsData.push(config);
+    ProData.push(name);
 }
 
-export default LabelsData;
+export {LabelsData,ProData, districts};

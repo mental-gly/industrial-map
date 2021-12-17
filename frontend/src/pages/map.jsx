@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom';
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { Map, APILoader, ScaleControl, ToolBarControl, ControlBarControl, Geolocation,Marker,Polygon} from '@uiw/react-amap';
-import LabelsData from './china-pp';
+import {LabelsData,ProData,districts} from './china-pp';
 
 const AMap = window.AMap
 
@@ -12,99 +12,58 @@ class Demo extends React.Component {
     super(props)
     this.state = {
       rmap: null,
-      chosen_province: null,
-      chosen_material: null,
+      
       lnglat: null
     }
   }
   // 组建挂载之后执行
-  componentDidMount() {
+  componentDidMount = () => {
       var SOC = 'CHN'
-      var colors = {};
-      
-      var GDPSpeed = {
-          '520000':10,//贵州
-          '540000':10,//西藏
-          '530000':8.5,//云南 
-          '500000':8.5,//重庆
-          '360000':8.5,//江西
-          '340000':8.0,//安徽
-          '510000':7.5,//四川
-          '350000':8.5,//福建
-          '430000':8.0,//湖南
-          '420000':7.5, //湖北
-          '410000':7.5,//河南
-          '330000':7.0,//浙江
-          '640000':7.5,//宁夏
-          '650000':7.0,//新疆
-          '440000':7.0,//广东
-          '370000':7.0,//山东
-          '450000':7.3,//广西
-          '630000':7.0,//青海
-          '320000':7.0,//江苏
-          '140000':6.5,//山西
-          '460000':7,// 海南
-          '310000':6.5,//上海
-          '110000':6.5, // 北京
-          '130000':6.5, // 河北
-          '230000':6, // 黑龙江
-          '220000':6,// 吉林
-          '210000':6.5, //辽宁
-          '150000':6.5,//内蒙古
-          '120000':5,// 天津
-          '620000':6,// 甘肃
-          '610000':8.5,// 甘肃
-          '710000':2.64, //台湾
-          '810000':3.0, //香港
-          '820000':4.7 //澳门
+      var color = ['#ffffb2','#fed976', '#feb24c', '#fd8d3c', '#f03b20', '#bd0026'];
+      var provinceData = [];
+      var cityData = [];
+      var nationStroke = 'rgba(20, 20, 120, 0.6)';
+      var nationFill = 'rgba(20, 120, 230, 0.3)';
 
-      }
-
-      var getColorByDGP = function(adcode){
-          if(!colors[adcode]){
-              var gdp = GDPSpeed[adcode];
-              if(!gdp){
-                  colors[adcode] = 'rgb(227,227,227)'
-              }else{   
-                  var r = 3;
-                  var g = 140;
-                  var b = 230;
-                  var a = gdp/10;
-                  colors[adcode] = 'rgba('+ r +','+ g +','+b+','+a+')';
-              }
-          }
-          return colors[adcode]
-      }
+      var districtSearch = new AMap.DistrictSearch({
+        level: "country",
+        subdistrict: 2, //  显示下级行政区级数
+      });
+  
+      districtSearch.search("中国", function (status, result) {
+        provinceData = result.districtList[0].districtList;
+      });
+  
       var disCountry = new AMap.DistrictLayer.Country({
           zIndex:10,
           SOC:'CHN',
           depth:1,
           styles:{
-              'nation-stroke':'#ff0000',
-              'coastline-stroke':'#0088ff',
-              'province-stroke':'grey',
-              'fill':function(props){
-                return getColorByDGP(props.adcode_pro)
-              }
+            "province-stroke": 'rgba(20, 20, 120, 0.6)',
+            'fill': nationFill
           }
       })
 
+    
+
       var disProvince = new AMap.DistrictLayer.Province({
           zIndex: 12,
+          depth:1,
           styles: {
-              'fill': function (properties) {
-                  // properties为可用于做样式映射的字段，包含
-                  // NAME_CHN:中文名称
-                  // adcode_pro
-                  // adcode_cit
-                  // adcode
-                  var adcode = properties.adcode;
-                  return getColorByDGP(adcode);
-              },
-              'city-stroke': 'blue', // 中国地级市边界
-          }
-    });
+                'city-stroke': 'rgba(20, 20, 120, 0.6)',
+                'fill': '#ffffb2'
+              }
+      });
       
+      // 颜色辅助方法
+    var colors = {};
+    var getColorByAdcode = function (adcode) {
+        var gb = Math.random() * 4;
+        colors[adcode] = color[gb];
+
+        return colors[adcode];
+    };
+
       var map = new AMap.Map("container",{
               zooms: [4, 10],
               center:[104.262814,38.421951],
@@ -112,7 +71,8 @@ class Demo extends React.Component {
               isHotspot:false,
               defaultCursor:'pointer',
               layers:[
-                  disCountry
+                disCountry,
+                  
               ],
               viewMode:'3D',
       })
@@ -121,35 +81,26 @@ class Demo extends React.Component {
       
       map.on('complete',function(){
         
-          var layer = new AMap.LabelsLayer({
+          var country_layer = new AMap.LabelsLayer({
               // 开启标注避让，默认为开启，v1.4.15 新增属性
-              collision: false,
+              collision: true,
               // 开启标注淡入动画，默认为开启，v1.4.15 新增属性
               animation: true,
           });
-          //eslint-disable-next-line
+          var province_layer = new AMap.LabelsLayer({
+            // 开启标注避让，默认为开启，v1.4.15 新增属性
+            collision: true,
+            // 开启标注淡入动画，默认为开启，v1.4.15 新增属性
+            animation: true,
+          });
+
+
           for (var i = 0; i < LabelsData.length; i++) {
-            //eslint-disable-next-line
               var labelsMarker = new AMap.LabelMarker(LabelsData[i]);
-              layer.add(labelsMarker);
+              country_layer.add(labelsMarker);
           }
-          map.add(layer);
+          map.add(country_layer);
       })
-
-      //显示地图层级与中心点信息
-      function logMapinfo(){
-        var zoom = map.getZoom(); //获取当前地图级别
-        var center = map.getCenter(); //获取当前地图中心位置
-
-        document.querySelector("#map-zoom").innerText = zoom;
-        document.querySelector("#map-center").innerText = center.toString();
-      };
-      
-      //绑定地图移动与缩放事件
-      map.on('moveend', logMapinfo);
-      map.on('zoomend', logMapinfo);
-
-      
 
       AMap.plugin(["AMap.Geocoder"],function(){
         var geocoder = new AMap.Geocoder({
@@ -166,23 +117,16 @@ class Demo extends React.Component {
             geocoder.getAddress(lnglat, function(status, result) {
                 if (status === 'complete'&&result.regeocode) {
                     var address = result.regeocode.formattedAddress;
-                    
-                    if(String(address).indexOf("省")!=-1)
+                    for(let i = 0; i < districts.length; i++)
                     {
-                      var str = address.split("省")[0] + "省";
+                        if(String(address).indexOf(ProData[i])!=-1)
+                        {
+                            var str = ProData[i];
+                            break;
+                        }
+
                     }
-                    else if(String(address).indexOf("自治区")!=-1){
-                      var str = address.split("区")[0] + "区";
-                    }
-                    else if(String(address).indexOf("行政区")!=-1){
-                      var str = address.split("区")[0] + "区";
-                    }
-                    else if(String(address).indexOf("市")!=-1){
-                      var str = address.split("市")[0] + "市";
-                    }
-                    else{
-                      var str = address;
-                    }
+                    
                     console.log(str);
                     axios({
                       url:'http://127.0.0.1:5000/',
@@ -191,8 +135,11 @@ class Demo extends React.Component {
                       },
                       method:'POST'
                       }).then(
-                          res => {console.log(res)
-                          document.getElementById('lnglat').value = res.data}
+                          res => {
+                            console.log(res)
+                            
+                
+                            }
                       ).catch(
                           err => console.error(err)
                     )
@@ -201,15 +148,55 @@ class Demo extends React.Component {
                     console.log('根据经纬度查询地址失败')
                 }
                 
+                
             });
             
         }
-        
+    
+        map.on('mousemove', function (ev) {
+            var px = ev.pixel;
+            // 拾取所在位置的行政区
+            var props = disCountry.getDistrictByContainerPos(px);
+    
+            if (props) {
+                var ad = props.adcode;
+                if(ad){
+                    // 重置行政区样式
+                    disCountry.setStyles({
+                        
+                        'fill': function (props) {
+                            return props.adcode == ad ? "#5470c6" : nationFill;
+                        }
+                    });
+                    
+                }
+                
+    
+                
+            }
+        });
+
+
         map.on('click',function(e){
             regeoCode(e);
+            var px = e.pixel;
+            var props = disCountry.getDistrictByContainerPos(px);
+            if (props) {
+                var ad = props.adcode;
+                if(ad){
+                    // 重置行政区样式
+                    disProvince.setAdcode(ad);
+                    
+                    
+                    
+                    map.addLayer(disProvince);
+                    
+                }
+            }
+            
+            map.setZoom(6); //设置地图层级
+            map.setCenter(e.lnglat,false); //设置地图中心点
 
-
-        
 
         //全国地图：鼠标移动  高亮省  鼠标点击  为市覆盖不同颜色   
         //省级地图：鼠标移动  高亮市    
@@ -230,13 +217,6 @@ class Demo extends React.Component {
       <div>
         <div id="container" style={{ width:"750px", height:"600px" }}/>
         
-        <div class="info">
-          <h4>获取地图级别与中心点坐标</h4>
-          <p>当前级别：<span id="map-zoom">4</span></p>
-          <p>当前中心点：<span id="map-center">104.262814,38.421951</span></p>
-        
-        </div>
-
       </div>
       
       
