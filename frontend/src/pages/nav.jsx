@@ -21,6 +21,8 @@ class Nav extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
+        chosen_province: null,
+        chosen_material: null,
       
     };
   }

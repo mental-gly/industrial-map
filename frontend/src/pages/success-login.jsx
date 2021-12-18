@@ -15,7 +15,7 @@ class Success extends React.Component {
             extra={[
               <Button type="primary" key="console">
                 <Link to='/imap'>Go to Home Page</Link>
-              </Button>,
+              </Button>
              
             ]}
           />
