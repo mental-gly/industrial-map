@@ -16,6 +16,9 @@ def login():
 @app.route('/mdata', methods=['GET','POST'])
 def mdata():
     return "1"
+@app.route('/register', methods=['GET','POST'])
+def register():
+    return "0"
 
 if __name__ == '__main__':
     app.run('127.0.0.1', port=5000, debug=True)
