@@ -2,35 +2,38 @@
 from flask import Flask,render_template,request,jsonify
 import json
 import pymysql
+from flask_cors import CORS
+
 app = Flask(__name__,template_folder="templates",static_folder="static",static_url_path="/backend/static")
 app.config["JSON_AS_ASCII"] = False
-db = pymysql.connect(host='106.13.162.57',user='root',database='industrial_map',passwd='lightlord@0127',port=3306)
+CORS(app)
+db = pymysql.connect(host='localhost',user='root',database='industrial_map',passwd='zhd20020708',port=3306)
 
 @app.route('/', methods=['GET','POST'])
 def index():
     return render_template('index.html')
 
-@app.route('/login/register', methods=['GET','POST'])
+@app.route('/register', methods=['GET','POST'])
 def register():
     if request.method == 'GET' :
         return render_template('register.html')
     if request.method == 'POST':
-        data = json.load(request.get_data(as_text=True))
+        data = json.loads(request.get_data(as_text=True))
         cursor = db.cursor()
         sql = "select * from user_account where name='%s'" % data["user_name"]
         cursor.execute(sql)
         if cursor.fetchall():
-            return "用户名已存在"
+            return {'code': 0,'error':"用户名已存在"}
         sql = "select * from user_account where email='%s'" % data["user_mail"]
         cursor.execute(sql)
         if cursor.fetchall():
-            return "邮箱已存在"
+            return {'code': 0,'error':"邮箱已存在"}
         sql = "insert into user_account values(null,'{name}','{pw}','{email}','tourist')"
-        sql = sql.format(name=data["user_name"],pw=data["user_pw"],email=data['user_mail'])
+        sql = sql.format(name=data["user_name"],pw=data["user_pwd"],email=data['user_mail'])
         cursor.execute(sql)
         db.commit()
-        #print("成功")
-        msg = {'code': 0}
+        print("成功")
+        msg = {'code': 1}
         return jsonify(msg)
 
 @app.route('/login', methods=['GET','POST'])
@@ -38,21 +41,22 @@ def login():
     if request.method == 'GET':
         return render_template('login.html')
     if request.method == 'POST':
-        data = json.load(request.get_data(as_text=True))
+        data = json.loads(request.get_data(as_text=True))
         cursor = db.cursor()
-        sql = "select password,id from user_account where name='%s'"%data["user_name"]
+        sql = "select password,name,type from user_account where name='%s'"%data["user_name"]
         cursor.execute(sql)
         account = cursor.fetchone()
         if account:
-            if account[0] == data['user_pw']:
-                #print("登陆成功")
+            if account[0] == data['user_pwd']:
+                print("登陆成功")
                 msg = {
                     "code": 1,
                     "cookie": {
-                        "sessionId": account[1]
+                        "sessionName": account[1],
+                        "type": account[2]
                     }
                 }
-                return render_template(json.dumps(msg))
+                return jsonify(msg)
             else:
                 return "密码错误"
         else:
@@ -64,7 +68,7 @@ def click():
     if request.method == 'GET':
         return render_template("map.html")
     if request.method == 'POST':
-        data = json.load(request.get_data(as_text=True))
+        data = json.loads(request.get_data(as_text=True))
         cursor = db.cursor()
         if data["en_type"]:
             sql = "select * from enterprise where type='%s'" % data["en_type"]
@@ -129,10 +133,10 @@ def click():
             }
             return jsonify(msg)
 
-@app.route('/admin', methods=['GET','POST'])
+@app.route('/mdata', methods=['GET','POST'])
 def admin():
     if request.method == 'POST':
-        data = json.load(request.get_data(as_text=True))
+        data = json.loads(request.get_data(as_text=True))
         cursor = db.cursor()
         if data["type"] == "insert":
             if data["table"] == "material":
@@ -170,24 +174,20 @@ def admin():
                 db.commit()
             return "删除成功"
         else:
-            column_name = data["co_name"]
-            if data["table"] == "material":
-                sql = "update material set '{col}'='{new}' where name='{name}')"
-                sql = sql.format(col=column_name,new=data["new"],name=data["ma_name"])
-                cursor.execute(sql)
-                db.commit()
-            elif data["table"] == "enterprise":
-                if column_name == "amount":
-                    sql = "update enterprise set amount={new} where name='{name}'"
-                    sql = sql.format(new=int(data["new"]), name=data["ma_name"])
-                elif column_name == "longitude" or column_name == "latitude":
-                    sql = "update enterprise set {col}={new} where name='{name}'"
-                    sql = sql.format(col=column_name, new=float(data["new"]), name=data["ma_name"])
-                else:
-                    sql = "update enterprise set {col}='{new}' where name='{name}'"
-                    sql = sql.format(col=column_name,new=data["new"], name=data["ma_name"])
-                cursor.execute(sql)
-                db.commit()
+            column_name = ["province","city","amount","en_type","longitude","latitude"]
+            for i in column_name:
+                if data[i] != "":
+                    if i == "amount":
+                        sql = "update enterprise set amount={new} where name='{name}'"
+                        sql = sql.format(new=int(data[i]), name=data["en_name"])
+                    elif i == "longitude" or i == "latitude":
+                        sql = "update enterprise set {col}={new} where name='{name}'"
+                        sql = sql.format(col=i, new=float(data[i]), name=data["en_name"])
+                    else:
+                        sql = "update enterprise set {col}='{new}' where name='{name}'"
+                        sql = sql.format(col=i,new=data[i], name=data["en_name"])
+            cursor.execute(sql)
+            db.commit()
             return "修改成功"
 
         #print("成功")
