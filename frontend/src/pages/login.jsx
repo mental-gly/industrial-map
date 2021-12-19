@@ -62,11 +62,11 @@ class Login extends React.Component{
             }
             }).then(data => {
                 console.log(data);
-                if(data.data == 1)
+                if(data.data.code == 1)
                 {
                     this.setState({check : 1})
                 }
-                if(data.data == 0)
+                else
                 {
                     this.setState({check : 0})
                 }

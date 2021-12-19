@@ -7,7 +7,7 @@ from flask_cors import CORS
 app = Flask(__name__,template_folder="templates",static_folder="static",static_url_path="/backend/static")
 app.config["JSON_AS_ASCII"] = False
 CORS(app)
-db = pymysql.connect(host='localhost',user='root',database='industrial_map',passwd='zhd20020708',port=3306)
+db = pymysql.connect(host='localhost',user='root',database='mydb1',passwd='Gly200111202428',port=3306)
 
 @app.route('/', methods=['GET','POST'])
 def index():
@@ -58,8 +58,13 @@ def login():
                 }
                 return jsonify(msg)
             else:
-                return "密码错误"
+                #密码错误
+                msg = {
+                    "code": 0
+                }
+                return jsonify(msg)
         else:
+            #用户名不存在
             return "用户名不存在"
         db.commit()
 

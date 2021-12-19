@@ -87,11 +87,11 @@ class Register extends React.Component{
                 }
                 }).then(data => {
                     console.log(data);
-                    if(data.data == 1)
+                    if(data.data.code == 1)
                     {
                         this.setState({check : 1,})
                     }
-                    if(data.data == 0)
+                    if(data.data.code == 0)
                     {
                         this.setState({check : 0,})
                     }
