@@ -60,6 +60,18 @@ class Register extends React.Component{
         else if(!(/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(value))) {
             alert('请输入正确的Email');
         }
+        else if(this.state.user == '')
+        {
+            alert('请输入用户名');
+        }
+        else if(this.state.pwd == '')
+        {
+            alert('请输入密码');
+        }
+        else if(this.state.email == '')
+        {
+            alert('请输入邮件');
+        }
         else
         {
             console.log("username:" + this.state.user + " userpwd:" + this.state.pwd + " email:" + this.state.email)
