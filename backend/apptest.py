@@ -13,5 +13,9 @@ def index():
 def login():
     return "1"
 
+@app.route('/mdata', methods=['GET','POST'])
+def mdata():
+    return "1"
+
 if __name__ == '__main__':
     app.run('127.0.0.1', port=5000, debug=True)

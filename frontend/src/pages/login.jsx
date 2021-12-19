@@ -1,9 +1,13 @@
 import React from 'react';
 import { Input,Radio,Button,Layout,Form,Carousel,Result} from 'antd';
 import axios from 'axios';
-import { ReactDOM, render } from 'react-dom';
+
+import { Navigate } from 'react-router-dom';
 import Fail from './fail-login';
 import Success from './success-login';
+
+import { BrowserRouter as Router, Route, NavLink, Switch, Redirect } from 'react-router';
+
 
 const { TextArea } = Input;
 const onChange = item => {
@@ -40,6 +44,9 @@ class Login extends React.Component{
 
         this.checkLogin = this.checkLogin.bind(this);
     }
+    componentWillMount(){
+        this.setState({check: -1})
+    }
     
     nameChange(item){
         this.setState({
@@ -50,7 +57,7 @@ class Login extends React.Component{
         console.log("username:" + this.state.user + " user pwd:" + this.state.pwd)
         axios({
             method: 'post',
-            url: 'http://127.0.0.1:5000/',
+            url: 'http://127.0.0.1:5000/login',
             data: {
                 "user_name":this.state.user,
                 "user_pwd":this.state.pwd,
@@ -59,7 +66,7 @@ class Login extends React.Component{
                     console.log(data);
                     if(data.data == "1")
                     {
-                        this.setState({check: 1,})
+                       this.setState({check: 1,})
                     }
                     else
                     {
@@ -73,14 +80,15 @@ class Login extends React.Component{
     render(){
         if(this.state.check == 1){
             return(
-                <Success/>
+                
+                <Navigate to="/success-login"/>
             ) 
             
         }
         else if(this.state.check == 0)
         {
             return(
-                <Fail/>
+                <Navigate to="/fail-login"/>
             ) 
         }
         else
