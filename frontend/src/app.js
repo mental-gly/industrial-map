@@ -7,7 +7,7 @@ import Register from './pages/register';
 import Mdata from './pages/mdata';
 import Fail from './pages/fail-login';
 import Success from './pages/success-login';
-
+import Chart from './pages/chart';
 
 class App extends React.Component {
     render() {
@@ -25,6 +25,7 @@ class App extends React.Component {
                         <Route path='/mdata' element = {<Mdata/>}/>
                         <Route path='/fail-login'  element = {<Fail/>}/>
                         <Route path='/success-login'  element = {<Success/>}/>
+                        <Route path='/chart'  element = {<Chart/>}/>
                     </Routes>
                     
                     

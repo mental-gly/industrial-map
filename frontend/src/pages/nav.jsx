@@ -1,6 +1,8 @@
 import React from "react";
 import 'antd/dist/antd.css';
-
+import Mdata
+ from "./mdata";
+ 
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -23,6 +25,7 @@ class Nav extends React.Component {
     this.state = { 
         chosen_province: null,
         chosen_material: null,
+        selected: 2,
       
     };
   }
@@ -33,20 +36,24 @@ class Nav extends React.Component {
       <Layout>
         <Header style={{ position: 'fixed', zIndex: 1, width: '100%' }}>
           <div className="logo" />
-          <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['2']}>
-            <Menu.Item key="1">nav 1</Menu.Item>
+          <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['2']}onSelect ={(item)=>{
+              this.setState({
+                selected: item.key,
+              })
+          }}>
+
+            <Menu.Item key="1">修改数据</Menu.Item>
             <Menu.Item key="2">nav 2</Menu.Item>
             <Menu.Item key="3">nav 3</Menu.Item>
           </Menu>
         </Header>
         <Content className="site-layout" style={{ padding: '0 50px', marginTop: 64 }}>
-          <Breadcrumb style={{ margin: '16px 0' }}>
-            <Breadcrumb.Item>首页</Breadcrumb.Item>
-            <Breadcrumb.Item>企业</Breadcrumb.Item>
-            <Breadcrumb.Item>技术中心</Breadcrumb.Item>
-          </Breadcrumb>
+          
+          
           <div className="site-layout-background" style={{ padding: 24, minHeight: 380 }}>
-            <Demo/>
+           
+            {(this.state.selected=='1') && <Mdata />}
+            {(this.state.selected=='2') && <Demo />}
           </div>
         </Content>
         <Footer style={{ textAlign: 'center' }}>Ant Design ©2018 Created by Ant UED</Footer>

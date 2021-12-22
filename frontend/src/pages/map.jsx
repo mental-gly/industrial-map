@@ -3,6 +3,7 @@ import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { Map, APILoader, ScaleControl, ToolBarControl, ControlBarControl, Geolocation,Marker,Polygon} from '@uiw/react-amap';
 import {LabelsData,ProData,districts} from './china-pp';
+import { Layout, Menu, Breadcrumb } from 'antd';
 
 const AMap = window.AMap
 
@@ -215,6 +216,11 @@ class Demo extends React.Component {
   render(){
     return(
       <div>
+        <Breadcrumb style={{ margin: '16px 0' }}>
+            <Breadcrumb.Item>首页</Breadcrumb.Item>
+            <Breadcrumb.Item>企业</Breadcrumb.Item>
+            <Breadcrumb.Item>技术中心</Breadcrumb.Item>
+          </Breadcrumb>
         <div id="container" style={{ width:"750px", height:"600px" }}/>
         
       </div>
