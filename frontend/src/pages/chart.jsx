@@ -2,6 +2,7 @@
 import { List, Divider} from 'antd';
 import React, { useState, useEffect } from 'react';
 import { Pie } from '@ant-design/charts';
+import PieChart from '@ant-design/plots/es/components/pie';
 
 const data = [
     {
@@ -47,6 +48,7 @@ const data = [
         type: 'element-active',
       },
     ],
+    
   };
 const listData = [];
 for (let i = 0; i < 23; i++) {
@@ -59,13 +61,21 @@ for (let i = 0; i < 23; i++) {
         'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.',
     });
 }
+const onReadyColumn = (plot) => {
+  plot.on('element:click', (...args) => {
+    
+    console.log(args[0].data.data.type);
+    
+  });
+};
 class Chart extends React.Component {
+  
   render(){
       return (
           <div>
 
           
-        <Pie {...config} />
+        <Pie {...config} onReady={onReadyColumn}/>
         <Divider orientation="left" >企业列表</Divider>
         <List
                 itemLayout="vertical"
