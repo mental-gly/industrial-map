@@ -50,8 +50,8 @@ class Mdata extends React.Component{
                         </Breadcrumb>
                     </div>
                     <Row>
-                        <Col span={1}></Col>
-                        <Col span={11}>
+                    <Col span={1}></Col>
+                        <Col span={12}>
                             企业
                             <Menter/>
                         </Col>
@@ -59,7 +59,7 @@ class Mdata extends React.Component{
                             材料
                             <Mmat/>
                         </Col>
-                        <Col span={1}></Col>
+                        
                     </Row>
                 
                 </Layout>

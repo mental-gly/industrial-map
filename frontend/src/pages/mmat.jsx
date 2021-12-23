@@ -107,10 +107,10 @@ class Mmat extends React.Component{
                         <Form
                             name="basic"
                             labelCol={{
-                                span: 3,
+                                span: 4,
                             }}
                             wrapperCol={{
-                                span: 10,
+                                span: 15,
                             }}
                             
                             ref={this.formRef}
@@ -176,9 +176,9 @@ class Mmat extends React.Component{
                             <Button htmlType="button" onClick={this.onReset_ma}>
                                 Reset
                             </Button>
-                            <Button htmlType="button" onClick={(item)=>{console.log(this.state)}}>
+                            {/* <Button htmlType="button" onClick={(item)=>{console.log(this.state)}}>
                                 print
-                            </Button>
+                            </Button> */}
                         </Form.Item>
                         </Form>
                     
