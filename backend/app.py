@@ -6,9 +6,11 @@ from flask_cors import CORS
 
 app = Flask(__name__,template_folder="templates",static_folder="static",static_url_path="/backend/static")
 app.config["JSON_AS_ASCII"] = False
-CORS(app)
+CORS(app,resources=r'/*')
 db = pymysql.connect(host='localhost',user='root',database='mydb1',passwd='Gly200111202428',port=3306)
 
+
+    
 @app.route('/', methods=['GET','POST'])
 def index():
     return render_template('index.html')

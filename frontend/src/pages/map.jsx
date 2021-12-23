@@ -1,9 +1,12 @@
 import ReactDOM from 'react-dom';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef,useEffect } from 'react';
 import axios from 'axios';
 import { Map, APILoader, ScaleControl, ToolBarControl, ControlBarControl, Geolocation,Marker,Polygon} from '@uiw/react-amap';
 import {LabelsData,ProData,districts} from './china-pp';
 import { Layout, Menu, Breadcrumb } from 'antd';
+import { List, Divider, Row, Col} from 'antd';
+import { Pie } from '@ant-design/charts';
+import Chart from './chart'
 
 const AMap = window.AMap
 
@@ -67,7 +70,7 @@ class Demo extends React.Component {
 
       var map = new AMap.Map("container",{
               zooms: [4, 10],
-              center:[104.262814,38.421951],
+              center:[104.262814,17],
               zoom: 4,
               isHotspot:false,
               defaultCursor:'pointer',
@@ -130,9 +133,9 @@ class Demo extends React.Component {
                     
                     console.log(str);
                     axios({
-                      url:'http://127.0.0.1:5000/',
+                      url:'http://127.0.0.1:5000/imap',
                       data:{
-                          "chosen_province":str
+                          "en_type":str
                       },
                       method:'POST'
                       }).then(
@@ -216,14 +219,32 @@ class Demo extends React.Component {
   render(){
     return(
       <div>
-        <Breadcrumb style={{ margin: '16px 0' }}>
-            <Breadcrumb.Item>首页</Breadcrumb.Item>
-            <Breadcrumb.Item>企业</Breadcrumb.Item>
-            <Breadcrumb.Item>技术中心</Breadcrumb.Item>
-          </Breadcrumb>
-        <div id="container" style={{ width:"750px", height:"600px" }}/>
-        
+          <div>
+          <Breadcrumb style={{ margin: '16px 0' }}>
+              <Breadcrumb.Item>首页</Breadcrumb.Item>
+              <Breadcrumb.Item>企业</Breadcrumb.Item>
+              <Breadcrumb.Item>技术中心</Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
+          <div>
+        <Row>
+          <Col span={13}>
+            
+          <div id="container" style={{ width:"100%", height:"100%" }}/>
+
+          </Col>
+          <Col span={2}>
+
+          </Col>
+          <Col span={8}>
+            <Chart/>
+
+          </Col>
+        </Row>
+        </div>
+
       </div>
+      
       
       
     )
