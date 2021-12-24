@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom';
 import React, { useState, useRef,useEffect } from 'react';
 import axios from 'axios';
 import { Map, APILoader, ScaleControl, ToolBarControl, ControlBarControl, Geolocation,Marker,Polygon} from '@uiw/react-amap';
-import {LabelsData,ProData,districts} from './china-pp';
+import {LabelsData,ProData,districts, AdData} from './china-pp';
 import { Layout, Menu, Breadcrumb } from 'antd';
 import { List, Divider, Row, Col} from 'antd';
 import { Pie } from '@ant-design/charts';
@@ -15,19 +15,47 @@ class Demo extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      rmap: null,
-      
-      lnglat: null
+      chosen_mat:"",
+      chosen_pro:""
+    }
+
+    this.componentDidMount = this.componentDidMount.bind(this);
+  }
+
+  handlerReceiveMat = ()=>{
+    return (Mat)=>{
+        this.setState({chosen_mat:Mat});
+        console.log(this.state.chosen_mat);
+        axios({
+          url:'http://127.0.0.1:5000/imap',
+          data:{
+              "en_type":this.props.en_type,
+              "chosen_province":this.state.chosen_pro,
+              "chosen_material":this.state.chosen_mat
+          },
+          method:'POST'
+          }).then(
+              res => {
+                console.log(res)
+                }
+          ).catch(
+              err => console.error(err)
+        )
     }
   }
+
+
   // 组建挂载之后执行
   componentDidMount = () => {
-      var SOC = 'CHN'
+      var th = this;
+      var SOC = 'CHN';
       var color = ['#ffffb2','#fed976', '#feb24c', '#fd8d3c', '#f03b20', '#bd0026'];
       var provinceData = [];
       var cityData = [];
       var nationStroke = 'rgba(20, 20, 120, 0.6)';
       var nationFill = 'rgba(20, 120, 230, 0.3)';
+      var str = "";
+      var mat = this.state.chosen_mat;
 
       var districtSearch = new AMap.DistrictSearch({
         level: "country",
@@ -48,7 +76,6 @@ class Demo extends React.Component {
           }
       })
 
-    
 
       var disProvince = new AMap.DistrictLayer.Province({
           zIndex: 12,
@@ -60,17 +87,17 @@ class Demo extends React.Component {
       });
       
       // 颜色辅助方法
-    var colors = {};
-    var getColorByAdcode = function (adcode) {
-        var gb = Math.random() * 4;
-        colors[adcode] = color[gb];
+      var colors = {};
+      var getColorByAdcode = function (adcode) {
+          var gb = Math.random() * 4;
+          colors[adcode] = color[gb];
 
-        return colors[adcode];
-    };
+          return colors[adcode];
+      };
 
       var map = new AMap.Map("container",{
               zooms: [4, 10],
-              center:[104.262814,17],
+              center:[104.262814,25],
               zoom: 4,
               isHotspot:false,
               defaultCursor:'pointer',
@@ -105,57 +132,6 @@ class Demo extends React.Component {
           }
           map.add(country_layer);
       })
-
-      AMap.plugin(["AMap.Geocoder"],function(){
-        var geocoder = new AMap.Geocoder({
-          //city: "010", //城市设为北京，默认：“全国”
-          //radius: 1000 //范围，默认：500
-        });
-        var marker = new AMap.Marker();;
-        function regeoCode(e) {
-            
-            var lnglat  = e.lnglat;
-            map.add(marker);
-            marker.setPosition(lnglat);
-            
-            geocoder.getAddress(lnglat, function(status, result) {
-                if (status === 'complete'&&result.regeocode) {
-                    var address = result.regeocode.formattedAddress;
-                    for(let i = 0; i < districts.length; i++)
-                    {
-                        if(String(address).indexOf(ProData[i])!=-1)
-                        {
-                            var str = ProData[i];
-                            break;
-                        }
-
-                    }
-                    
-                    console.log(str);
-                    axios({
-                      url:'http://127.0.0.1:5000/imap',
-                      data:{
-                          "en_type":str
-                      },
-                      method:'POST'
-                      }).then(
-                          res => {
-                            console.log(res)
-                            
-                
-                            }
-                      ).catch(
-                          err => console.error(err)
-                    )
-                    
-                }else{
-                    console.log('根据经纬度查询地址失败')
-                }
-                
-                
-            });
-            
-        }
     
         map.on('mousemove', function (ev) {
             var px = ev.pixel;
@@ -181,39 +157,63 @@ class Demo extends React.Component {
         });
 
 
+        var handlerData = ()=>{
+          axios({
+            url:'http://127.0.0.1:5000/imap',
+            data:{
+                "en_type":th.props.en_type,
+                "chosen_province":th.state.chosen_pro,
+                "chosen_material":th.state.chosen_mat
+            },
+            method:'POST'
+            }).then(
+                res => {
+                  console.log(res)
+                  }
+            ).catch(
+                err => console.error(err)
+          )
+          
+        }
+
         map.on('click',function(e){
-            regeoCode(e);
+            // console.log("11111")
+            // //regeoCode(e);
+            // console.log("222222")
             var px = e.pixel;
             var props = disCountry.getDistrictByContainerPos(px);
             if (props) {
                 var ad = props.adcode;
+                console.log(ad);
+                
                 if(ad){
                     // 重置行政区样式
                     disProvince.setAdcode(ad);
-                    
-                    
-                    
                     map.addLayer(disProvince);
-                    
+                    for(let i = 0; i < districts.length; i++)
+                    {
+                        if(ad == AdData[i])
+                        {
+                            str = ProData[i];
+                            th.setState({chosen_pro:str});
+                            break;
+                        }
+                    }
                 }
             }
             
             map.setZoom(6); //设置地图层级
             map.setCenter(e.lnglat,false); //设置地图中心点
 
-
-        //全国地图：鼠标移动  高亮省  鼠标点击  为市覆盖不同颜色   
-        //省级地图：鼠标移动  高亮市    
+            handlerData();
         })
-       
-      })
-      
-      
   }
+
+  
+
   // 组建将要卸载的时候执行
   componentWillUnmount(){
-    // 释放地图
-    this.rmap && this.rmap.destory();
+    
   }
 
   render(){
@@ -222,8 +222,9 @@ class Demo extends React.Component {
           <div>
           <Breadcrumb style={{ margin: '16px 0' }}>
               <Breadcrumb.Item>首页</Breadcrumb.Item>
-              <Breadcrumb.Item>企业</Breadcrumb.Item>
-              <Breadcrumb.Item>技术中心</Breadcrumb.Item>
+              {(this.props.en_type == "企业")&& <Breadcrumb.Item>企业</Breadcrumb.Item>}
+              {(this.props.en_type == "技术中心")&& <Breadcrumb.Item>技术中心</Breadcrumb.Item>}
+              {(this.props.en_type == "产业基地")&& <Breadcrumb.Item>产业基地</Breadcrumb.Item>}
             </Breadcrumb>
           </div>
           <div>
@@ -237,7 +238,7 @@ class Demo extends React.Component {
 
           </Col>
           <Col span={8}>
-            <Chart/>
+            <Chart onReceiveMat={this.handlerReceiveMat()}/>
 
           </Col>
         </Row>

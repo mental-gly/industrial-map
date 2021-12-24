@@ -275,6 +275,7 @@ var districts = [
 
 var LabelsData = [];
 var ProData=[];
+var AdData=[];
 
 const directions = {
     '北京':'top',
@@ -318,6 +319,7 @@ for (let i = 0; i < districts.length; i++) {
     };
     let district = districts[i];
     let name = district.name;
+    let adcode = district.adcode;
     config.text.content = name;
     config.position = district.center.split(',');
     if (directions[name]) {
@@ -325,6 +327,7 @@ for (let i = 0; i < districts.length; i++) {
     }
     LabelsData.push(config);
     ProData.push(name);
+    AdData.push(adcode);
 }
 
-export {LabelsData,ProData, districts};
+export {LabelsData,ProData, districts,AdData};

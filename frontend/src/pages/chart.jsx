@@ -61,21 +61,31 @@ for (let i = 0; i < 23; i++) {
         'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.',
     });
 }
-const onReadyColumn = (plot) => {
-  plot.on('element:click', (...args) => {
-    
-    console.log(args[0].data.data.type);
-    
-  });
-};
+
 class Chart extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      chosen_mat:null
+    }
+
+    this.onReadyColumn = this.onReadyColumn.bind(this);
+  }
+
+  onReadyColumn = (plot) => {
+    plot.on('element:click', (...args) => {
+      
+      console.log(args[0].data.data.type);
+      this.props.onReceiveMat(args[0].data.data.type);
+    });
+  };
   
   render(){
       return (
           <div>
 
           
-        <Pie {...config} onReady={onReadyColumn}/>
+        <Pie {...config} onReady={this.onReadyColumn}/>
         <Divider orientation="left" >企业列表</Divider>
         <List
                 itemLayout="vertical"
@@ -98,9 +108,8 @@ class Chart extends React.Component {
                 >
                     <List.Item.Meta 
                     title={<a href={item.href}>{item.title}</a>}
-                    description={item.description}
                     />
-                    {item.content}
+                    {item.description}
                 </List.Item>
                 )}
             /> 

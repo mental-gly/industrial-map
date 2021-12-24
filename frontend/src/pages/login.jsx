@@ -4,7 +4,7 @@ import axios from 'axios';
 import 'antd/dist/antd.min.css';
 import Register from './register';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-// import pic from "../images/G1.jpg";
+import pic from "../images/G1.jpg";
 import { Navigate } from 'react-router-dom';
 
 
@@ -23,7 +23,7 @@ var sectionStyle = {
     width: "1536px",
     height: "745px",
   // makesure here is String确保这里是一个字符串，以下是es6写法
-    // backgroundImage: `url(${pic})` 
+    backgroundImage: `url(${pic})` 
   };
 
 class Login extends React.Component{

@@ -23,10 +23,7 @@ class Nav extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
-        chosen_province: null,
-        chosen_material: null,
-        selected: 2,
-      
+      selected: 2,
     };
   }
   
@@ -43,8 +40,9 @@ class Nav extends React.Component {
           }}>
 
             <Menu.Item key="1">修改数据</Menu.Item>
-            <Menu.Item key="2">nav 2</Menu.Item>
-            <Menu.Item key="3">nav 3</Menu.Item>
+            <Menu.Item key="2">企业</Menu.Item>
+            <Menu.Item key="3">技术中心</Menu.Item>
+            <Menu.Item key="4">产业基地</Menu.Item>
           </Menu>
         </Header>
         
@@ -54,10 +52,12 @@ class Nav extends React.Component {
           <div className="site-layout-background" style={{ padding: 24, minHeight: 380 }}>
            
             {(this.state.selected=='1') && <Mdata />}
-            {(this.state.selected=='2') && <Demo />}
+            {(this.state.selected=='2') && <Demo en_type="企业"/>}
+            {(this.state.selected=='3') && <Demo en_type="技术中心"/>}
+            {(this.state.selected=='4') && <Demo en_type="产业基地"/>}
           </div>
         </Content>
-        <Footer style={{ textAlign: 'center' }}>Ant Design ©2018 Created by Ant UED</Footer>
+        <Footer style={{ textAlign: 'center' }}>Industrial Map  ©2021 Created by G9</Footer>
       </Layout>
     );
   }

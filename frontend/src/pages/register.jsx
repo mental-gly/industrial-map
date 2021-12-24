@@ -3,7 +3,7 @@ import { UserOutlined, LockOutlined, GlobalOutlined} from '@ant-design/icons';
 import { Input,Radio,Button,Layout,Form, Card, Space,Divider} from 'antd';
 import axios from 'axios';
 import 'antd/dist/antd.min.css';
-// import pic from "../images/G1.jpg";
+import pic from "../images/G1.jpg";
 import Login from './login';
 import Success from './success-login';
 import Fail from './fail-login';
@@ -17,7 +17,7 @@ var sectionStyle = {
     width: "1536px",
     height: "745px",
   // makesure here is String确保这里是一个字符串，以下是es6写法
-    // backgroundImage: `url(${pic})` 
+    backgroundImage: `url(${pic})` 
 };
 
 class Register extends React.Component{
