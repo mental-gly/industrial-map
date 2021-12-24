@@ -14,7 +14,7 @@ import {HashRouter as Router,Route,Routes,Link} from 'react-router-dom'
 import Demo from "./map";
 import Login from "./login";
 
-import { Layout, Menu, Breadcrumb } from 'antd';
+import { Layout, Menu, Breadcrumb,Avatar,Image } from 'antd';
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 const mykey1 = '40ee46a7e920aea22e5e1df91a1b96aa';
@@ -32,18 +32,21 @@ class Nav extends React.Component {
     return (
       <Layout>
         <Header style={{ position: 'fixed', zIndex: 1, width: '100%' }}>
-          <div className="logo" />
+          <div className="logo" >
+          </div>
           <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['2']}onSelect ={(item)=>{
               this.setState({
                 selected: item.key,
               })
           }}>
-
+            <Menu.Item key="0">--产 业 地 图 系 统  Industrial Map--</Menu.Item>
             <Menu.Item key="1">修改数据</Menu.Item>
             <Menu.Item key="2">企业</Menu.Item>
             <Menu.Item key="3">技术中心</Menu.Item>
             <Menu.Item key="4">产业基地</Menu.Item>
+            
           </Menu>
+          
         </Header>
         
         <Content className="site-layout" style={{ padding: '0 50px', marginTop: 64 }}>

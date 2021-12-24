@@ -4,35 +4,35 @@ import React, { useState, useEffect } from 'react';
 import { Pie } from '@ant-design/charts';
 import PieChart from '@ant-design/plots/es/components/pie';
 
-const data = [
-    {
-      type: '分类一',
-      value: 27,
-    },
-    {
-      type: '分类二',
-      value: 25,
-    },
-    {
-      type: '分类三',
-      value: 18,
-    },
-    {
-      type: '分类四',
-      value: 15,
-    },
-    {
-      type: '分类五',
-      value: 10,
-    },
-    {
-      type: '其他',
-      value: 5,
-    },
+var data = [
+    // {
+    //   type: '分类一',
+    //   value: 27,
+    // },
+    // {
+    //   type: '分类二',
+    //   value: 25,
+    // },
+    // {
+    //   type: '分类三',
+    //   value: 18,
+    // },
+    // {
+    //   type: '分类四',
+    //   value: 15,
+    // },
+    // {
+    //   type: '分类五',
+    //   value: 10,
+    // },
+    // {
+    //   type: '其他',
+    //   value: 5,
+    // },
   ];
   const config = {
     appendPadding: 10,
-    data,
+   data,
     angleField: 'value',
     colorField: 'type',
     radius: 0.8,
@@ -50,26 +50,27 @@ const data = [
     ],
     
   };
-const listData = [];
-for (let i = 0; i < 23; i++) {
-    listData.push({
-      href: 'https://ant.design',
-      title: `ant design part ${i}`,
-      description:
-        'Ant Design, a design language for background applications, is refined by Ant UED Team.',
-      content:
-        'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.',
-    });
-}
+
 
 class Chart extends React.Component {
   constructor(props) {
     super(props)
+   
     this.state = {
-      chosen_mat:null
+      chosen_mat:null,
+      ListData:this.props.en_list,
+      Piedata:this.props.mat_list
     }
 
     this.onReadyColumn = this.onReadyColumn.bind(this);
+  }
+
+  componentWillReceiveProps(nextProps:any){
+    this.setState({
+        ListData: nextProps.en_list,
+        Piedata:nextProps.mat_list
+        
+    })
   }
 
   onReadyColumn = (plot) => {
@@ -80,12 +81,20 @@ class Chart extends React.Component {
     });
   };
   
+  //  listData = this.state.ListData;
+  
   render(){
+    data=this.state.Piedata;
+    console.log("data");
+    console.log(data);
       return (
           <div>
 
           
-        <Pie {...config} onReady={this.onReadyColumn}/>
+        <Pie 
+          {...
+          config}
+         onReady={this.onReadyColumn}/>
         <Divider orientation="left" >企业列表</Divider>
         <List
                 itemLayout="vertical"
@@ -96,7 +105,7 @@ class Chart extends React.Component {
                 },
                 pageSize: 3,
                 }}
-                dataSource={listData}
+                dataSource={this.state.ListData}
                 footer={
                 <div>
                     <b>ant design</b> footer part
@@ -104,12 +113,12 @@ class Chart extends React.Component {
                 }
                 renderItem={item => (
                 <List.Item
-                    key={item.title}   
+                    key={item[1]}   
                 >
                     <List.Item.Meta 
-                    title={<a href={item.href}>{item.title}</a>}
+                    title={<a href={item.href}>{item[1]}</a>}
                     />
-                    {item.description}
+                    {item[2]}{" "}{item[3]}
                 </List.Item>
                 )}
             /> 

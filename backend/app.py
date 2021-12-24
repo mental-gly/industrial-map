@@ -6,11 +6,9 @@ from flask_cors import CORS
 
 app = Flask(__name__,template_folder="templates",static_folder="static",static_url_path="/backend/static")
 app.config["JSON_AS_ASCII"] = False
-CORS(app,resources=r'/*')
+CORS(app)
 db = pymysql.connect(host='localhost',user='root',database='mydb1',passwd='Gly200111202428',port=3306)
 
-
-    
 @app.route('/', methods=['GET','POST'])
 def index():
     return render_template('index.html')
@@ -60,20 +58,26 @@ def login():
                 }
                 return jsonify(msg)
             else:
-                #密码错误
-                msg = {
-                    "code": 0
-                }
-                return jsonify(msg)
+                return "密码错误"
         else:
-            #用户名不存在
             return "用户名不存在"
         db.commit()
 
 @app.route('/imap', methods=['GET','POST'])
 def click():
     if request.method == 'GET':
-        return render_template("map.html")
+        cursor = db.cursor()
+        sql = "select * from enterprise"
+        cursor.execute(sql)
+        enterprises = cursor.fetchall()
+        sql = "select * from material"
+        cursor.execute(sql)
+        materials = cursor.fetchall()
+        msg = {
+            'enterprise_info': enterprises,
+            'Material': materials
+        }
+        return jsonify(msg)
     if request.method == 'POST':
         data = json.loads(request.get_data(as_text=True))
         cursor = db.cursor()
@@ -99,15 +103,15 @@ def click():
             else:
                 sql = "select city from enterprise where id in " \
                       "(select en_id from enter_mater where " \
-                      "ma_id in (select id from material where name = '%s'))" % data["chosen_material"]
+                      "ma_id in (select id from material where ma_name = '%s'))" % data["chosen_material"]
                 cursor.execute(sql)
                 cities = cursor.fetchall()
             sql = "select * from enterprise where id in " \
                       "(select en_id from enter_mater where " \
-                      "ma_id in (select id from material where name = '%s'))" % data["chosen_material"]
+                      "ma_id in (select id from material where ma_name = '%s'))" % data["chosen_material"]
             cursor.execute(sql)
             enterprises = cursor.fetchall()
-            sql = "select * from material where name = '%s'" % data["chosen_material"]
+            sql = "select * from material where ma_name = '%s'" % data["chosen_material"]
             cursor.execute(sql)
             materials = cursor.fetchone()
             msg = {
@@ -122,21 +126,26 @@ def click():
             }
             return jsonify(msg)
         else:
-            sql = "select city from enterprise where province='%s'" % data["chosen_province"]
+            sql = "select city from enterprise where locate('%s',province) > 0" % data["chosen_province"]
             cursor.execute(sql)
             cities = cursor.fetchall()
-            sql = "select * from enterprise where province='%s'" % data["chosen_province"]
+            sql = "select * from enterprise where locate('%s',province) > 0" % data["chosen_province"]
             cursor.execute(sql)
             enterprises = cursor.fetchall()
             sql = "select * from material where id in " \
                   "(select ma_id in enter_mater where " \
-                  "en_id in (select id from enterprise where province='%s'))" % data["chosen_province"]
+                  "en_id in (select id from enterprise where locate('%s',province) > 0))" % data["chosen_province"]
             cursor.execute(sql)
             materials = cursor.fetchall()
+            sql = "select ma_name,count(en_id) from material natural join enter_mater " \
+                  "natural join enterprise where locate('%s',province) > 0 group by ma_id" % data["chosen_province"]
+            cursor.execute(sql)
+            data = cursor.fetchall()
             msg = {
                 'cities_name': cities,
                 'enterprise_info': enterprises,
-                'Material': materials
+                'Material': materials,
+                'data' : data
             }
             return jsonify(msg)
 
@@ -147,11 +156,19 @@ def admin():
         cursor = db.cursor()
         if data["type"] == "insert":
             if data["table"] == "material":
+                sql = "select * from material where ma_name='%s'" % data["ma_name"]
+                cursor.execute(sql)
+                if cursor.fetchall():
+                    return {'code': 0, 'msg': "材料已存在"}
                 sql = "insert into material values(null,'{name}','{intro}')"
                 sql = sql.format(name=data["ma_name"],intro=data["introduction"])
                 cursor.execute(sql)
                 db.commit()
             elif data["table"] == "enterprise":
+                sql = "select * from enterprise where name='%s'" % data["en_name"]
+                cursor.execute(sql)
+                if cursor.fetchall():
+                    return {'code': 0, 'error': "企业已存在"}
                 sql = "select id from enterprise where name='%s'" % data["en_name"]
                 cursor.execute(sql)
                 en_id = cursor.fetchone()
@@ -162,25 +179,37 @@ def admin():
                                      long=data["longitude"],la=data["latitude"])
                     cursor.execute(sql)
                     db.commit()
-                sql = "select id from material where name='%s'" % data["ma_name"]
+                sql = "select id from material where ma_name='%s'" % data["ma_name"]
                 cursor.execute(sql)
                 ma_id = cursor.fetchone()
                 sql = "insert into enter_mater values(null,{en},{ma})"
                 sql = sql.format(en=en_id[0],ma=ma_id[0])
                 cursor.execute(sql)
                 db.commit()
-            return "添加成功"
+            return {'code': 1,'msg':"添加成功"}
         elif data["type"] == "delete":
             if data["table"] == "material":
-                sql = "delete from material where name='%s'" % data['en_name']
+                sql = "select * from material where ma_name='%s'" % data["ma_name"]
+                cursor.execute(sql)
+                if not cursor.fetchall():
+                    return {'code': 0, 'error': "材料不存在"}
+                sql = "delete from material where ma_name='%s'" % data['ma_name']
                 cursor.execute(sql)
                 db.commit()
             elif data["table"] == "enterprise":
+                sql = "select * from enterprise where name='%s'" % data["en_name"]
+                cursor.execute(sql)
+                if not cursor.fetchall():
+                    return {'code': 0, 'error': "企业不存在"}
                 sql = "delete from enterprise where name='%s'" % data['en_name']
                 cursor.execute(sql)
                 db.commit()
-            return "删除成功"
+            return {'code':1,'msg':"删除成功"}
         else:
+            sql = "select * from enterprise where name='%s'" % data["en_name"]
+            cursor.execute(sql)
+            if not cursor.fetchall():
+                return {'code': 0, 'error': "企业不存在"}
             column_name = ["province","city","amount","en_type","longitude","latitude"]
             for i in column_name:
                 if data[i] != "":
@@ -195,11 +224,7 @@ def admin():
                         sql = sql.format(col=i,new=data[i], name=data["en_name"])
             cursor.execute(sql)
             db.commit()
-            return "修改成功"
-
-        #print("成功")
-        msg = {'code': 0}
-        return jsonify(msg)
+            return {'code':1,'msg':"修改成功"}
 
 if __name__ == '__main__':
     app.run('127.0.0.1', port=5000, debug=True)

@@ -16,7 +16,9 @@ class Demo extends React.Component {
     super(props)
     this.state = {
       chosen_mat:"",
-      chosen_pro:""
+      chosen_pro:"",
+      en_list:[],
+      mat_list:[]
     }
 
     this.componentDidMount = this.componentDidMount.bind(this);
@@ -36,17 +38,46 @@ class Demo extends React.Component {
           method:'POST'
           }).then(
               res => {
+                console.log("with mat")
                 console.log(res)
-                }
+                this.setState({en_list:res.data.enterprise_info})
+                this.setState({mat_list:res.data.Material})
+              }
           ).catch(
               err => console.error(err)
         )
     }
   }
 
+  getData(){ //请求数据函数
+    axios({
+      url:'http://127.0.0.1:5000/imap',
+      data:{
+          "en_type":this.props.en_type,
+          "chosen_province":this.state.chosen_pro,
+          "chosen_material":this.state.chosen_mat
+      },
+      method:'GET'
+      }).then(
+          res => {
+            console.log("fisrtly")
+            console.log(res)
+            console.log(res.data.enterprise_info)
+            this.setState({en_list:res.data.enterprise_info})
+            this.setState({mat_list:res.data.Material})
+            
+          }
+      ).catch(
+          err => console.error(err)
+    )
+  }
+
 
   // 组建挂载之后执行
   componentDidMount = () => {
+      this.getData();
+      
+      
       var th = this;
       var SOC = 'CHN';
       var color = ['#ffffb2','#fed976', '#feb24c', '#fd8d3c', '#f03b20', '#bd0026'];
@@ -66,6 +97,7 @@ class Demo extends React.Component {
         provinceData = result.districtList[0].districtList;
       });
   
+      
       var disCountry = new AMap.DistrictLayer.Country({
           zIndex:10,
           SOC:'CHN',
@@ -107,11 +139,13 @@ class Demo extends React.Component {
               ],
               viewMode:'3D',
       })
+
+
+      
       map.addControl(new AMap.Scale());
       map.addControl(new AMap.ToolBar({liteStyle:true}));
       
       map.on('complete',function(){
-        
           var country_layer = new AMap.LabelsLayer({
               // 开启标注避让，默认为开启，v1.4.15 新增属性
               collision: true,
@@ -131,6 +165,14 @@ class Demo extends React.Component {
               country_layer.add(labelsMarker);
           }
           map.add(country_layer);
+
+          for (var i = 0; i < th.state.en_list.length; i++) {
+              var marker = new AMap.Marker({
+                position: [th.state.en_list[i][6],th.state.en_list[i][7]]
+              });
+              map.add(marker);
+          }
+
       })
     
         map.on('mousemove', function (ev) {
@@ -168,8 +210,11 @@ class Demo extends React.Component {
             method:'POST'
             }).then(
                 res => {
+                  console.log("only map")
                   console.log(res)
-                  }
+                  th.setState({en_list:res.data.enterprise_info})
+                  th.setState({mat_list:res.data.Material})
+                }
             ).catch(
                 err => console.error(err)
           )
@@ -217,6 +262,8 @@ class Demo extends React.Component {
   }
 
   render(){
+    console.log("inmap");
+    console.log(this.state.en_list);
     return(
       <div>
           <div>
@@ -238,7 +285,8 @@ class Demo extends React.Component {
 
           </Col>
           <Col span={8}>
-            <Chart onReceiveMat={this.handlerReceiveMat()}/>
+            
+            <Chart onReceiveMat={this.handlerReceiveMat()} en_list={this.state.en_list} mat_list={this.state.mat_list}/>
 
           </Col>
         </Row>
