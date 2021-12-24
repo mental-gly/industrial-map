@@ -7,7 +7,7 @@ from flask_cors import CORS
 app = Flask(__name__,template_folder="templates",static_folder="static",static_url_path="/backend/static")
 app.config["JSON_AS_ASCII"] = False
 CORS(app)
-db = pymysql.connect(host='localhost',user='root',database='mydb1',passwd='Gly200111202428',port=3306)
+db = pymysql.connect(host='localhost',user='root',database='map2',passwd='root12345',port=3306)
 
 @app.route('/', methods=['GET','POST'])
 def index():
@@ -66,52 +66,56 @@ def login():
 @app.route('/imap', methods=['GET','POST'])
 def click():
     if request.method == 'GET':
+        data = json.loads(request.get_data(as_text=True))
         cursor = db.cursor()
-        sql = "select * from enterprise"
+        sql = "select * from enterprise where type='%s'" % data["en_type"]
         cursor.execute(sql)
         enterprises = cursor.fetchall()
-        sql = "select * from material"
+        sql = "select * from material where ma_id in " \
+              "(select ma_id from enter_mater where " \
+              "en_id in (select en_id from enterprise where type='%s'))" % data["en_type"]
         cursor.execute(sql)
         materials = cursor.fetchall()
+        sql = "select ma_name,count(en_id) from material natural join enter_mater " \
+              "natural join enterprise where type = '{type}' group by ma_id"
+        sql.format(type=data['en_type'])
+        cursor.execute(sql)
+        rowdata = cursor.fetchall()
+        data = []
+        for i in range(len(rowdata)):
+            data.append({'type': rowdata[i][0], 'value': rowdata[i][1]})
         msg = {
             'enterprise_info': enterprises,
-            'Material': materials
+            'Material': materials,
+            'data':data
         }
         return jsonify(msg)
     if request.method == 'POST':
         data = json.loads(request.get_data(as_text=True))
         cursor = db.cursor()
-        if data["en_type"]:
-            sql = "select * from enterprise where type='%s'" % data["en_type"]
-            cursor.execute(sql)
-            enterprises = cursor.fetchall()
-            sql = "select * from material where id in " \
-                  "(select ma_id from enter_mater where " \
-                  "en_id in (select id from enterprise where type='%s'))" % data["en_type"]
-            cursor.execute(sql)
-            materials = cursor.fetchall()
-            msg = {
-                'enterprise_info': enterprises,
-                'Material': materials
-            }
-            return jsonify(msg)
         if data['chosen_material']:
             if data['chosen_province']:
-                sql = "select city from enterprise where province='%s'" % data["chosen_province"]
+                sql = "select city from enterprise where province='{pro}' and type='{type}'"
+                sql.format(pro=data["chosen_province"],type=data['en_type'])
                 cursor.execute(sql)
                 cities = cursor.fetchall()
             else:
-                sql = "select city from enterprise where id in " \
+                sql = "select city from enterprise where type='{type}' and en_id in " \
                       "(select en_id from enter_mater where " \
-                      "ma_id in (select id from material where ma_name = '%s'))" % data["chosen_material"]
+                      "ma_id in (select ma_id from material where ma_name = '{name}'))"
+                sql.format(type=data['en_type'],name=data["chosen_material"])
                 cursor.execute(sql)
                 cities = cursor.fetchall()
-            sql = "select * from enterprise where id in " \
-                      "(select en_id from enter_mater where " \
-                      "ma_id in (select id from material where ma_name = '%s'))" % data["chosen_material"]
+            sql = "select * from enterprise where type='{type}' and en_id in " \
+                  "(select en_id from enter_mater where " \
+                  "ma_id in (select ma_id from material where ma_name = '{name}'))"
+            sql.format(type=data['en_type'], name=data["chosen_material"])
             cursor.execute(sql)
             enterprises = cursor.fetchall()
-            sql = "select * from material where ma_name = '%s'" % data["chosen_material"]
+            sql = "select * from material where ma_name = '{name}' and ma_id in " \
+                  "(select ma_id from enter_mater where" \
+                  "en_id in (select en_id from enterprise where type = '{type}')"
+            sql.format(name=data["chosen_material"],type=data["en_type"])
             cursor.execute(sql)
             materials = cursor.fetchone()
             msg = {
@@ -126,21 +130,28 @@ def click():
             }
             return jsonify(msg)
         else:
-            sql = "select city from enterprise where locate('%s',province) > 0" % data["chosen_province"]
+            sql = "select city from enterprise where type = '{type}' and locate('{pro}',province) > 0"
+            sql.format(type=data['en_type'],pro=data["chosen_province"])
             cursor.execute(sql)
             cities = cursor.fetchall()
-            sql = "select * from enterprise where locate('%s',province) > 0" % data["chosen_province"]
+            sql = "select * from enterprise where type = '{type}' and locate('{pro}',province) > 0"
+            sql.format(type=data['en_type'], pro=data["chosen_province"])
             cursor.execute(sql)
             enterprises = cursor.fetchall()
-            sql = "select * from material where id in " \
+            sql = "select * from material where ma_id in " \
                   "(select ma_id in enter_mater where " \
-                  "en_id in (select id from enterprise where locate('%s',province) > 0))" % data["chosen_province"]
+                  "en_id in (select en_id from enterprise where type = '{type}' and locate('{pro}',province) > 0))"
+            sql.format(type=data['en_type'],pro=data["chosen_province"])
             cursor.execute(sql)
             materials = cursor.fetchall()
             sql = "select ma_name,count(en_id) from material natural join enter_mater " \
-                  "natural join enterprise where locate('%s',province) > 0 group by ma_id" % data["chosen_province"]
+                  "natural join enterprise where (type = '{type}' and locate('{pro}',province) > 0) group by ma_id"
+            sql.format(pro=data["chosen_province"],type=data['en_type'])
             cursor.execute(sql)
-            data = cursor.fetchall()
+            rowdata = cursor.fetchall()
+            data = []
+            for i in range(len(rowdata)):
+                data.append({'type':rowdata[i][0],'value':rowdata[i][1]})
             msg = {
                 'cities_name': cities,
                 'enterprise_info': enterprises,
@@ -159,7 +170,7 @@ def admin():
                 sql = "select * from material where ma_name='%s'" % data["ma_name"]
                 cursor.execute(sql)
                 if cursor.fetchall():
-                    return {'code': 0, 'msg': "材料已存在"}
+                    return {'code': 0, 'error': "材料已存在"}
                 sql = "insert into material values(null,'{name}','{intro}')"
                 sql = sql.format(name=data["ma_name"],intro=data["introduction"])
                 cursor.execute(sql)
@@ -169,19 +180,28 @@ def admin():
                 cursor.execute(sql)
                 if cursor.fetchall():
                     return {'code': 0, 'error': "企业已存在"}
-                sql = "select id from enterprise where name='%s'" % data["en_name"]
+                
+                sql = "insert into enterprise values(null,'{name}','{pro}','{city}',{amount},'{type}',{long},{lati})"
+                sql = sql.format(name=data["en_name"],pro=data["province"],
+                                    city=data["city"],amount=data["amount"],type=data["en_type"],
+                                    long=data["longitude"],lati=data["latitude"])
                 cursor.execute(sql)
+                db.commit()
+                sql = "select en_id from enterprise where name='%s'" % data["en_name"]
+                cursor.execute(sql)
+                # print(cursor.fetchone())
                 en_id = cursor.fetchone()
-                if not en_id:
-                    sql = "insert into enterprise values(null,'{name}','{pro}','{city}',{amount},'{type}',{long},{lati})"
-                    sql = sql.format(name=data["en_name"],pro=data["province"],
-                                     city=data["city"],amount=data["amount"],type=data["en_type"],
-                                     long=data["longitude"],la=data["latitude"])
-                    cursor.execute(sql)
-                    db.commit()
-                sql = "select id from material where ma_name='%s'" % data["ma_name"]
+                print(data["ma_name"])
+                sql = "select ma_id from material where ma_name='%s'" % data["ma_name"]
                 cursor.execute(sql)
+                
                 ma_id = cursor.fetchone()
+               
+                if ma_id is None:
+                    return {'code': 0, 'error': "材料不存在"}  
+                
+                print(en_id)
+                print(ma_id)
                 sql = "insert into enter_mater values(null,{en},{ma})"
                 sql = sql.format(en=en_id[0],ma=ma_id[0])
                 cursor.execute(sql)
@@ -206,25 +226,35 @@ def admin():
                 db.commit()
             return {'code':1,'msg':"删除成功"}
         else:
-            sql = "select * from enterprise where name='%s'" % data["en_name"]
-            cursor.execute(sql)
-            if not cursor.fetchall():
-                return {'code': 0, 'error': "企业不存在"}
-            column_name = ["province","city","amount","en_type","longitude","latitude"]
-            for i in column_name:
-                if data[i] != "":
-                    if i == "amount":
-                        sql = "update enterprise set amount={new} where name='{name}'"
-                        sql = sql.format(new=int(data[i]), name=data["en_name"])
-                    elif i == "longitude" or i == "latitude":
-                        sql = "update enterprise set {col}={new} where name='{name}'"
-                        sql = sql.format(col=i, new=float(data[i]), name=data["en_name"])
-                    else:
-                        sql = "update enterprise set {col}='{new}' where name='{name}'"
-                        sql = sql.format(col=i,new=data[i], name=data["en_name"])
-            cursor.execute(sql)
-            db.commit()
-            return {'code':1,'msg':"修改成功"}
+            if data["table"] == "enterprise":
+                sql = "select * from enterprise where name='%s'" % data["en_name"]
+                cursor.execute(sql)
+                if not cursor.fetchall():
+                    return {'code': 0, 'error': "企业不存在"}
+                column_name = ["province","city","amount","en_type","longitude","latitude"]
+                for i in column_name:
+                    if data[i] != "":
+                        if i == "amount":
+                            sql = "update enterprise set amount={new} where name='{name}'"
+                            sql = sql.format(new=int(data[i]), name=data["en_name"])
+                        elif i == "longitude" or i == "latitude":
+                            sql = "update enterprise set {col}={new} where name='{name}'"
+                            sql = sql.format(col=i, new=float(data[i]), name=data["en_name"])
+                        else:
+                            sql = "update enterprise set {col}='{new}' where name='{name}'"
+                            sql = sql.format(col=i,new=data[i], name=data["en_name"])
+                cursor.execute(sql)
+                db.commit()
+                return {'code':1,'msg':"修改成功"}
+            else:
+                sql = "select * from material where ma_name='%s'" % data["ma_name"]
+                cursor.execute(sql)
+                if not cursor.fetchall():
+                    return {'code': 0, 'error': "材料不存在"}
+                sql = "update material set introduction='{intro}' where ma_name='{name}'"
+                sql = sql.format(intro=data["introduction"], name=data["ma_name"])
+                return {'code':1,'msg':"修改成功"}
+                
 
 if __name__ == '__main__':
     app.run('127.0.0.1', port=5000, debug=True)

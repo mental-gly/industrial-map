@@ -79,14 +79,14 @@ class Mmat extends React.Component{
             }
             }).then((data =>{
                     console.log(data);
-                    if(data.data == "1")
+                    if(data.data.code == "1")
                     {
-                        alert("修改成功");
+                        alert(data.data.msg);
                         this.onReset();
                     }
                     else 
                     {
-                        alert("修改失败，请检查数据");
+                        alert(data.data.error);
                         
                     }
             }
@@ -130,7 +130,7 @@ class Mmat extends React.Component{
                             <Radio.Group name="datatype" >
                             <Radio value={1} onClick = {(item)=>{this.setState({ma_type : "insert"},()=>this.setState({isrequired: true},()=>{console.log(this.state.ma_type)}))}}>增加</Radio>
                             <Radio value={2} onClick = {(item)=>{this.setState({ma_type : "delete"},()=>this.setState({isrequired: false},()=>{console.log(this.state.ma_type)}))}}>删除</Radio>
-                            <Radio value={3} onClick = {(item)=>{this.setState({ma_type : "update"},()=>this.setState({isrequired: false},()=>{console.log(this.state.ma_type)}))}}>修改</Radio>
+                            <Radio value={3} onClick = {(item)=>{this.setState({ma_type : "update"},()=>this.setState({isrequired: true},()=>{console.log(this.state.ma_type)}))}}>修改</Radio>
                             </Radio.Group>
                             
                         </Form.Item>

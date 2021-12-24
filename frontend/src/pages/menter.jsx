@@ -28,6 +28,7 @@ class Menter extends React.Component{
         this.state = {
             type : "",
             en_name:'',
+            ma_name:'',
             province:'',
             city:'',
             amount:'',
@@ -48,6 +49,7 @@ class Menter extends React.Component{
         this.setState({type : ''});
         this.setState({table: ''});
         this.setState({en_name:''});
+        this.setState({ma_name:''});
         this.setState({province:''});
         this.setState({city:''});
         this.setState({amount:''});
@@ -67,6 +69,10 @@ class Menter extends React.Component{
                   return ;
         }
         if(this.state.type=="insert"){
+            if(this.state.ma_name.length==0){
+                alert("请输入材料名称");
+                return ;
+             }
              if(this.state.amount.length==0||this.state.en_type.length==0){
                 alert("请输入完整数据");
                 return ;
@@ -91,6 +97,7 @@ class Menter extends React.Component{
                 "table":'enterprise',
                 
                 "en_name":this.state.en_name,
+                "ma_name":this.state.ma_name,
                 "province":this.state.province,
                 "city":this.state.city,
                 "amount":this.state.amount,
@@ -99,15 +106,18 @@ class Menter extends React.Component{
                 "latitude":this.state.latitude    
             }
             }).then((data =>{
+                console.log("mmat_res_data");
                     console.log(data);
-                    if(data.data == "1")
+                    console.log(data.data.code);
+                    console.log(data.data.error);
+                    if(data.data.code == "1")
                     {
-                        alert("修改成功");
+                        alert(data.data.msg);
                         this.onReset();
                     }
                     else 
                     {
-                        alert("修改失败，请检查数据");
+                        alert(data.data.error);
                         
                     }
             }
@@ -170,6 +180,19 @@ class Menter extends React.Component{
                         ]}
                     >
                         <Input placeholder="input maname" onChange={(item) => this.setState({en_name:item.target.value},()=>{console.log(this.state.en_name)})}/>
+                    </Form.Item>
+                    <Form.Item
+                        label="材料名称"
+                        name="ma_name"
+                        
+                        rules={[
+                        {  
+                            required: this.state.isrequired,
+                            message: 'Please input!',
+                        },
+                        ]}
+                    >
+                        <Input placeholder="input maname" onChange={(item) => this.setState({ma_name:item.target.value},()=>{console.log(this.state.ma_name)})}/>
                     </Form.Item>
 
                     <Form.Item
