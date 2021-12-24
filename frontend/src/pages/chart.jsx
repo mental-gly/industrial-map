@@ -86,7 +86,8 @@ class Chart extends React.Component {
   render(){
     console.log("this.state.Piedata");
     console.log(this.state.Piedata);
-    for(let i=0; i < data.length;i++){
+    
+    while(data.length>0){
       data.pop();
     }
     for(let i=0; i < this.state.Piedata.length;i++){

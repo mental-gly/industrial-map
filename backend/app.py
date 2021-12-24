@@ -74,38 +74,36 @@ def click():
             print("1")
             if data['chosen_province']:
                 print("10")
-                sql = "select city from enterprise where province='{pro}' and type='{type}'"
-                sql.format(pro=data["chosen_province"],type=data['en_type'])
+                sql = "select city from enterprise where province='%s' and type='%s'" %(data["chosen_province"],data['en_type'])
                 cursor.execute(sql)
                 cities = cursor.fetchall()
             else:
                 print("11")
-                sql = "select city from enterprise where type='{type}' and en_id in " \
+                sql = "select city from enterprise where type='%s' and en_id in " \
                       "(select en_id from enter_mater where " \
-                      "ma_id in (select ma_id from material where ma_name = '{name}'))"
-                sql.format(type=data['en_type'],name=data["chosen_material"])
+                      "ma_id in (select ma_id from material where ma_name = '%s'))" %(data['en_type'],data["chosen_material"])
                 cursor.execute(sql)
                 cities = cursor.fetchall()
-            sql = "select * from enterprise where type='{type}' and en_id in " \
-                  "(select en_id from enter_mater where " \
-                  "ma_id in (select ma_id from material where ma_name = '{name}'))"
-            sql.format(type=data['en_type'], name=data["chosen_material"])
+            sql = "select * from enterprise where type='%s' and en_id in " \
+                "(select en_id from enter_mater where " \
+                "ma_id in (select ma_id from material where ma_name = '%s'))" %(data['en_type'],data["chosen_material"])
             cursor.execute(sql)
             enterprises = cursor.fetchall()
-            sql = "select * from material where ma_name = '{name}' and ma_id in " \
-                  "(select ma_id from enter_mater where" \
-                  "en_id in (select en_id from enterprise where type = '{type}')"
-            sql.format(name=data["chosen_material"],type=data["en_type"])
+            print(enterprises)
+            print(data["chosen_material"])
+            print(data["en_type"])
+            sql = "select * from material where ma_name = '%s' and ma_id in (select ma_id from enter_mater where en_id in (select en_id from enterprise where type = '%s'))" %(data["chosen_material"],data["en_type"])
             cursor.execute(sql)
-            materials = cursor.fetchone()
+            materials = cursor.fetchall()
+            print(materials)
             msg = {
                 'cities_name' : cities,
                 'enterprise_info' : enterprises,
                 'Material' :
                     {
-                        'id' : materials[0],
-                        'name' : materials[1],
-                        'content' : materials[2]
+                        'id' : materials[0][0],
+                        'name' : materials[0][1],
+                        'content' : materials[0][2]
                     }
             }
             return jsonify(msg)

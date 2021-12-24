@@ -41,7 +41,7 @@ class Demo extends React.Component {
                 console.log("with mat")
                 console.log(res)
                 this.setState({en_list:res.data.enterprise_info})
-                this.setState({mat_list:res.data.Material})
+                // this.setState({mat_list:res.data.Material})
               }
           ).catch(
               err => console.error(err)
@@ -213,7 +213,7 @@ class Demo extends React.Component {
                   console.log("only map")
                   console.log(res)
                   th.setState({en_list:res.data.enterprise_info})
-                  th.setState({mat_list:res.data.Material})
+                  th.setState({mat_list:res.data.data})
                 }
             ).catch(
                 err => console.error(err)
