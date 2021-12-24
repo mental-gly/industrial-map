@@ -86,6 +86,9 @@ class Chart extends React.Component {
   render(){
     console.log("this.state.Piedata");
     console.log(this.state.Piedata);
+    for(let i=0; i < data.length;i++){
+      data.pop();
+    }
     for(let i=0; i < this.state.Piedata.length;i++){
       data.push({
         "type":this.state.Piedata[i].type,
@@ -116,7 +119,7 @@ class Chart extends React.Component {
                 dataSource={this.state.ListData}
                 footer={
                 <div>
-                    <b>ant design</b> footer part
+                    
                 </div>
                 }
                 renderItem={item => (

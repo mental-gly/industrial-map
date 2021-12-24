@@ -113,23 +113,21 @@ def click():
             print("0")
             if data['chosen_province']:
                 print("00")
-                sql = "select city from enterprise where type = '{type}' and locate('{pro}',province) > 0"
-                sql.format(type=data['en_type'],pro=data["chosen_province"])
+                sql = "select city from enterprise where type = '%s' and locate('%s',province) > 0" % (data['en_type'],data["chosen_province"])
                 cursor.execute(sql)
                 cities = cursor.fetchall()
-                sql = "select * from enterprise where type = '{type}' and locate('{pro}',province) > 0"
-                sql.format(type=data['en_type'], pro=data["chosen_province"])
+                
+                sql = "select * from enterprise where type = '%s' and locate('%s',province) > 0" %(data['en_type'], data["chosen_province"])
                 cursor.execute(sql)
                 enterprises = cursor.fetchall()
+
                 sql = "select * from material where ma_id in " \
-                    "(select ma_id in enter_mater where " \
-                    "en_id in (select en_id from enterprise where type = '{type}' and locate('{pro}',province) > 0))"
-                sql.format(type=data['en_type'],pro=data["chosen_province"])
+                    "(select ma_id from enter_mater where " \
+                    "en_id in (select en_id from enterprise where type = '%s' and locate('%s',province) > 0))" %(data['en_type'],data["chosen_province"])
                 cursor.execute(sql)
                 materials = cursor.fetchall()
                 sql = "select ma_name,count(en_id) from material natural join enter_mater " \
-                    "natural join enterprise where (type = '{type}' and locate('{pro}',province) > 0) group by ma_id"
-                sql.format(pro=data["chosen_province"],type=data['en_type'])
+                    "natural join enterprise where (type = '%s' and locate('%s',province) > 0) group by ma_id" % (data['en_type'],data["chosen_province"])
                 cursor.execute(sql)
                 rowdata = cursor.fetchall()
                 data = []
