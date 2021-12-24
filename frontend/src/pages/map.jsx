@@ -57,14 +57,14 @@ class Demo extends React.Component {
           "chosen_province":this.state.chosen_pro,
           "chosen_material":this.state.chosen_mat
       },
-      method:'GET'
+      method:'POST'
       }).then(
           res => {
             console.log("fisrtly")
             console.log(res)
             console.log(res.data.enterprise_info)
             this.setState({en_list:res.data.enterprise_info})
-            this.setState({mat_list:res.data.Material})
+            this.setState({mat_list:res.data.data})
             
           }
       ).catch(

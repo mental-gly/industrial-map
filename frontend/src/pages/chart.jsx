@@ -32,7 +32,7 @@ var data = [
   ];
   const config = {
     appendPadding: 10,
-   data,
+    data,
     angleField: 'value',
     colorField: 'type',
     radius: 0.8,
@@ -84,7 +84,15 @@ class Chart extends React.Component {
   //  listData = this.state.ListData;
   
   render(){
-    data=this.state.Piedata;
+    console.log("this.state.Piedata");
+    console.log(this.state.Piedata);
+    for(let i=0; i < this.state.Piedata.length;i++){
+      data.push({
+        "type":this.state.Piedata[i].type,
+        "value":this.state.Piedata[i].value
+      })
+    }
+    // data=this.state.Piedata;
     console.log("data");
     console.log(data);
       return (

@@ -7,7 +7,7 @@ from flask_cors import CORS
 app = Flask(__name__,template_folder="templates",static_folder="static",static_url_path="/backend/static")
 app.config["JSON_AS_ASCII"] = False
 CORS(app)
-db = pymysql.connect(host='localhost',user='root',database='map2',passwd='root12345',port=3306)
+db = pymysql.connect(host='localhost',user='root',database='mydb2',passwd='Gly200111202428',port=3306)
 
 @app.route('/', methods=['GET','POST'])
 def index():
@@ -65,41 +65,21 @@ def login():
 
 @app.route('/imap', methods=['GET','POST'])
 def click():
-    if request.method == 'GET':
-        data = json.loads(request.get_data(as_text=True))
-        cursor = db.cursor()
-        sql = "select * from enterprise where type='%s'" % data["en_type"]
-        cursor.execute(sql)
-        enterprises = cursor.fetchall()
-        sql = "select * from material where ma_id in " \
-              "(select ma_id from enter_mater where " \
-              "en_id in (select en_id from enterprise where type='%s'))" % data["en_type"]
-        cursor.execute(sql)
-        materials = cursor.fetchall()
-        sql = "select ma_name,count(en_id) from material natural join enter_mater " \
-              "natural join enterprise where type = '{type}' group by ma_id"
-        sql.format(type=data['en_type'])
-        cursor.execute(sql)
-        rowdata = cursor.fetchall()
-        data = []
-        for i in range(len(rowdata)):
-            data.append({'type': rowdata[i][0], 'value': rowdata[i][1]})
-        msg = {
-            'enterprise_info': enterprises,
-            'Material': materials,
-            'data':data
-        }
-        return jsonify(msg)
+    # if request.method == 'GET':
+        
     if request.method == 'POST':
         data = json.loads(request.get_data(as_text=True))
         cursor = db.cursor()
         if data['chosen_material']:
+            print("1")
             if data['chosen_province']:
+                print("10")
                 sql = "select city from enterprise where province='{pro}' and type='{type}'"
                 sql.format(pro=data["chosen_province"],type=data['en_type'])
                 cursor.execute(sql)
                 cities = cursor.fetchall()
             else:
+                print("11")
                 sql = "select city from enterprise where type='{type}' and en_id in " \
                       "(select en_id from enter_mater where " \
                       "ma_id in (select ma_id from material where ma_name = '{name}'))"
@@ -130,35 +110,74 @@ def click():
             }
             return jsonify(msg)
         else:
-            sql = "select city from enterprise where type = '{type}' and locate('{pro}',province) > 0"
-            sql.format(type=data['en_type'],pro=data["chosen_province"])
-            cursor.execute(sql)
-            cities = cursor.fetchall()
-            sql = "select * from enterprise where type = '{type}' and locate('{pro}',province) > 0"
-            sql.format(type=data['en_type'], pro=data["chosen_province"])
-            cursor.execute(sql)
-            enterprises = cursor.fetchall()
-            sql = "select * from material where ma_id in " \
-                  "(select ma_id in enter_mater where " \
-                  "en_id in (select en_id from enterprise where type = '{type}' and locate('{pro}',province) > 0))"
-            sql.format(type=data['en_type'],pro=data["chosen_province"])
-            cursor.execute(sql)
-            materials = cursor.fetchall()
-            sql = "select ma_name,count(en_id) from material natural join enter_mater " \
-                  "natural join enterprise where (type = '{type}' and locate('{pro}',province) > 0) group by ma_id"
-            sql.format(pro=data["chosen_province"],type=data['en_type'])
-            cursor.execute(sql)
-            rowdata = cursor.fetchall()
-            data = []
-            for i in range(len(rowdata)):
-                data.append({'type':rowdata[i][0],'value':rowdata[i][1]})
-            msg = {
-                'cities_name': cities,
-                'enterprise_info': enterprises,
-                'Material': materials,
-                'data' : data
-            }
-            return jsonify(msg)
+            print("0")
+            if data['chosen_province']:
+                print("00")
+                sql = "select city from enterprise where type = '{type}' and locate('{pro}',province) > 0"
+                sql.format(type=data['en_type'],pro=data["chosen_province"])
+                cursor.execute(sql)
+                cities = cursor.fetchall()
+                sql = "select * from enterprise where type = '{type}' and locate('{pro}',province) > 0"
+                sql.format(type=data['en_type'], pro=data["chosen_province"])
+                cursor.execute(sql)
+                enterprises = cursor.fetchall()
+                sql = "select * from material where ma_id in " \
+                    "(select ma_id in enter_mater where " \
+                    "en_id in (select en_id from enterprise where type = '{type}' and locate('{pro}',province) > 0))"
+                sql.format(type=data['en_type'],pro=data["chosen_province"])
+                cursor.execute(sql)
+                materials = cursor.fetchall()
+                sql = "select ma_name,count(en_id) from material natural join enter_mater " \
+                    "natural join enterprise where (type = '{type}' and locate('{pro}',province) > 0) group by ma_id"
+                sql.format(pro=data["chosen_province"],type=data['en_type'])
+                cursor.execute(sql)
+                rowdata = cursor.fetchall()
+                data = []
+                for i in range(len(rowdata)):
+                    data.append({'type':rowdata[i][0],'value':rowdata[i][1]})
+                msg = {
+                    'cities_name': cities,
+                    'enterprise_info': enterprises,
+                    'Material': materials,
+                    'data' : data
+                }
+                return jsonify(msg)
+            else:
+                print("01")
+                sql = "select * from enterprise where type='%s'" % data["en_type"]
+                cursor.execute(sql)
+                enterprises = cursor.fetchall()
+                print("enterprise")
+                print(enterprises)
+                sql = "select * from material where ma_id in " \
+                    "(select ma_id from enter_mater where " \
+                    "en_id in (select en_id from enterprise where type='%s'))" % data["en_type"]
+                cursor.execute(sql)
+                materials = cursor.fetchall()
+                print("materials")
+                print(materials)
+
+                
+
+
+                sql = "select ma_name,count(en_id) from material natural join enter_mater natural join enterprise where type = '%s' group by ma_id" % data["en_type"]
+                # sql.format(type=data['en_type'])
+                print(data["en_type"])
+                cursor.execute(sql)
+                # print(cursor.fetchall())
+                rowdata = cursor.fetchall()
+                print("rowdata")
+                print(rowdata)
+                data = []
+                for i in range(len(rowdata)):
+                    data.append({'type': rowdata[i][0], 'value': rowdata[i][1]})
+                msg = {
+                    'enterprise_info': enterprises,
+                    'Material': materials,
+                    'data':data
+                }
+                return jsonify(msg)
+
 
 @app.route('/mdata', methods=['GET','POST'])
 def admin():
