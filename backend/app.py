@@ -77,6 +77,13 @@ def click():
                 sql = "select city from enterprise where province='%s' and type='%s'" %(data["chosen_province"],data['en_type'])
                 cursor.execute(sql)
                 cities = cursor.fetchall()
+                sql = "select * from enterprise where type='%s' and  locate('%s',province) > 0 and en_id in " \
+                    "(select en_id from enter_mater where " \
+                    "ma_id in (select ma_id from material where ma_name = '%s'))" %(data['en_type'],data['chosen_province'],data["chosen_material"])
+                cursor.execute(sql)
+                enterprises = cursor.fetchall()
+                print(enterprises)
+               
             else:
                 print("11")
                 sql = "select city from enterprise where type='%s' and en_id in " \
@@ -84,12 +91,12 @@ def click():
                       "ma_id in (select ma_id from material where ma_name = '%s'))" %(data['en_type'],data["chosen_material"])
                 cursor.execute(sql)
                 cities = cursor.fetchall()
-            sql = "select * from enterprise where type='%s' and en_id in " \
-                "(select en_id from enter_mater where " \
-                "ma_id in (select ma_id from material where ma_name = '%s'))" %(data['en_type'],data["chosen_material"])
-            cursor.execute(sql)
-            enterprises = cursor.fetchall()
-            print(enterprises)
+                sql = "select * from enterprise where type='%s' and en_id in " \
+                    "(select en_id from enter_mater where " \
+                    "ma_id in (select ma_id from material where ma_name = '%s'))" %(data['en_type'],data["chosen_material"])
+                cursor.execute(sql)
+                enterprises = cursor.fetchall()
+                print(enterprises)
             print(data["chosen_material"])
             print(data["en_type"])
             sql = "select * from material where ma_name = '%s' and ma_id in (select ma_id from enter_mater where en_id in (select en_id from enterprise where type = '%s'))" %(data["chosen_material"],data["en_type"])
