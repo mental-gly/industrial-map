@@ -37,7 +37,7 @@ var data = [
     colorField: 'type',
     radius: 0.8,
     label: {
-      type: 'outer',
+      type: 'inner',
       content: '{name} {percentage}',
     },
     interactions: [

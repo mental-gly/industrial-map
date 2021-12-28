@@ -41,7 +41,8 @@ class Demo extends React.Component {
                 console.log("with mat")
                 console.log(res)
                 this.setState({en_list:res.data.enterprise_info})
-                // this.setState({mat_list:res.data.Material})
+                //this.setState({mat_list:res.data.Material})
+                // this.setState({mat_list:this.state.mat_list})
               }
           ).catch(
               err => console.error(err)

@@ -96,6 +96,13 @@ def click():
             cursor.execute(sql)
             materials = cursor.fetchall()
             print(materials)
+            sql = "select ma_name,count(en_id) from material natural join enter_mater " \
+                    "natural join enterprise where (type = '%s' and locate('%s',province) > 0) group by ma_id" % (data['en_type'],data["chosen_province"])
+            cursor.execute(sql)
+            rowdata = cursor.fetchall()
+            data = []
+            for i in range(len(rowdata)):
+                data.append({'type':rowdata[i][0],'value':rowdata[i][1]})
             msg = {
                 'cities_name' : cities,
                 'enterprise_info' : enterprises,
@@ -104,7 +111,8 @@ def click():
                         'id' : materials[0][0],
                         'name' : materials[0][1],
                         'content' : materials[0][2]
-                    }
+                    },
+                'data' : data
             }
             return jsonify(msg)
         else:
